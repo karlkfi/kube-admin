@@ -2,12 +2,7 @@
 
 set -o errexit -o nounset -o pipefail -o posix
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <username>"
-    exit 1
-fi
-
-USER_NAME=$1
+USER_NAME="${1:-$USER_NAME}"
 
 sudo kubectl apply --kubeconfig /etc/kubernetes/admin.conf -f- <<EOF
 apiVersion: rbac.authorization.k8s.io/v1

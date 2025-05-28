@@ -4,21 +4,29 @@ These scripts are for managing Kubernetes users.
 
 This assumes SSO is not configured and users exist only in this cluster.
 
-1. Create a new user key pair and sign it withe the Kubernetes cluster Root CA:
+1. Select a user name:
+    ```bash
+    USER_NAME=kisenber
     ```
-    ./create-certs.sh $USERNAME
+1. Select a cluster name:
+    ```bash
+    CLUSTER_NAME=aws-test
+    ```
+1. Create a new user key pair and sign it withe the Kubernetes cluster Root CA:
+    ```bash
+    ./scripts/users/create-certs.sh
     ```
     Certs generated:
-    - `~/kube-admin/certs/$USERNAME.key` - private key
-    - `~/kube-admin/certs/$USERNAME.csr` - certificate signing request
-    - `~/kube-admin/certs/$USERNAME.crt` - signed public key
+    - `~/kube-admin/certs/$USER_NAME.key` - private key
+    - `~/kube-admin/certs/$USER_NAME.csr` - certificate signing request
+    - `~/kube-admin/certs/$USER_NAME.crt` - signed public key
 1. Create a kubeconfig for a user:
+    ```bash
+    ./scripts/users/create-kubeconfig.sh
     ```
-    ./create-kubeconfig.sh $USERNAME
-    ```
-    Config generated: `~/kube-admin/kubeconfigs/$USERNAME.conf`
+    Config generated: `~/kube-admin/kubeconfigs/$USER_NAME.conf`
 1. Grant the user `cluster-admin`:
-    ```
-    ./grant-cluster-admin.sh $USERNAME
+    ```bash
+    ./scripts/users/grant-cluster-admin.sh
     ```
     ClusterRoleBinding will be applied directly to the cluster using `kubectl` and the `/etc/kubernetes/admin.conf` credentials.

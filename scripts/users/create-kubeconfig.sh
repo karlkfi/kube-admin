@@ -2,14 +2,9 @@
 
 set -o errexit -o nounset -o pipefail -o posix
 
-if [[ "$#" -ne 1 ]]; then
-    echo "Usage: $0 <username>"
-    exit 1
-fi
-
-USER_NAME="${USER_NAME:-$1}"
+USER_NAME="${1:-$USER_NAME}"
 CLUSTER_NAME="${CLUSTER_NAME:-aws-test}"
-CONTEXT_NAME="${CONTEXT_NAME:-aws-test}"
+CONTEXT_NAME="${CONTEXT_NAME:-$CLUSTER_NAME}"
 
 CA_CERT="/etc/kubernetes/pki/ca.crt"
 API_CERT="/etc/kubernetes/pki/apiserver.crt"
