@@ -8,7 +8,7 @@ sudo kubectl apply --kubeconfig /etc/kubernetes/admin.conf -f- <<EOF
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: admin-binding-kisenber
+  name: "admin-binding-${USER_NAME}"
 subjects:
 - kind: User
   name: "${USER_NAME}"
