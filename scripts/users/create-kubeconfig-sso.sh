@@ -2,18 +2,19 @@
 
 set -o errexit -o nounset -o pipefail -o posix
 
-USER_NAME="${1:-$USER_NAME}"
-CLUSTER_NAME="${CLUSTER_NAME:-aws-test}"
+# Required. Only used in the KUBECONFIG. Example: "aws-staging".
+CLUSTER_NAME="${CLUSTER_NAME}"
 CONTEXT_NAME="${CONTEXT_NAME:-$CLUSTER_NAME}"
+
+# Default: AMD Okta Prod
+OIDC_ISSUER_URL="${OIDC_ISSUER_URL:-https://amdsso.okta.com/oauth2/default}"
+OIDC_CLIENT_ID="${OIDC_CLIENT_ID:-0oashqaa4kKos0dtZ697}"
 
 CA_CERT="/etc/kubernetes/pki/ca.crt"
 API_CERT="/etc/kubernetes/pki/apiserver.crt"
 WORK_DIR="$HOME/kube-admin"
-CRT_DIR="$WORK_DIR/users/certs"
-CLIENT_CERT="$CRT_DIR/$USER_NAME.crt"
-CLIENT_KEY="$CRT_DIR/$USER_NAME.key"
 KUBECONFIG_DIR="$WORK_DIR/users/kubeconfigs"
-KUBECONFIG_FILE="$KUBECONFIG_DIR/$USER_NAME.conf"
+KUBECONFIG_FILE="$KUBECONFIG_DIR/$CLUSTER_NAME-sso.conf"
 
 if [[ -z "${API_SERVER:-}" ]]; then
   DNS_ALL="$(openssl x509 -in "$API_CERT" -noout -text | grep "DNS:" | tr ',' '\n' | grep "DNS:" | tr -d 'DNS: ')"
@@ -32,8 +33,6 @@ fi
 
 # Base64 encode the certificates
 CA_CERT_BASE64=$(cat "$CA_CERT" | base64 | tr -d '\n')
-CLIENT_CERT_BASE64=$(cat "$CLIENT_CERT" | base64 | tr -d '\n')
-CLIENT_KEY_BASE64=$(cat "$CLIENT_KEY" | base64 | tr -d '\n')
 
 mkdir -p "$KUBECONFIG_DIR"
 
@@ -48,14 +47,25 @@ clusters:
 contexts:
 - context:
     cluster: $CLUSTER_NAME
-    user: $USER_NAME
+    user: oidc-login
   name: $CONTEXT_NAME
 current-context: $CONTEXT_NAME
 users:
-- name: $USER_NAME
+- name: oidc-login
   user:
-    client-certificate-data: $CLIENT_CERT_BASE64
-    client-key-data: $CLIENT_KEY_BASE64
+    exec:
+      apiVersion: client.authentication.k8s.io/v1
+      command: kubectl
+      args:
+      - oidc-login
+      - get-token
+      - --oidc-issuer-url=${OIDC_ISSUER_URL}
+      - --oidc-client-id=${OIDC_CLIENT_ID}
+      - --oidc-extra-scope=email,groups
+      - --skip-open-browser
+      env: null
+      interactiveMode: Never
+      provideClusterInfo: false
 EOF
 
-echo "Kubeconfig file '$KUBECONFIG_FILE' created successfully with embedded certificates."
+echo "Kubeconfig file '$KUBECONFIG_FILE' created successfully."
