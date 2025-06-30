@@ -28,7 +28,7 @@ if [[ -z "${API_SERVER:-}" ]]; then
   fi
   # TODO: Lookup API port
   API_SERVER="https://${API_DNS}:6443"
-  echo "API Server: ${API_SERVER}:"
+  echo "API Server: ${API_SERVER}"
 fi
 
 # Base64 encode the certificates

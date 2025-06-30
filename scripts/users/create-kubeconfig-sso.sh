@@ -4,7 +4,7 @@ set -o errexit -o nounset -o pipefail -o posix
 
 # Required. Only used in the KUBECONFIG. Example: "aws-staging".
 CLUSTER_NAME="${CLUSTER_NAME}"
-CONTEXT_NAME="${CONTEXT_NAME:-$CLUSTER_NAME}"
+CONTEXT_NAME="${CONTEXT_NAME:-${CLUSTER_NAME}-sso}"
 
 # Default: AMD Okta Prod
 OIDC_ISSUER_URL="${OIDC_ISSUER_URL:-https://amdsso.okta.com/oauth2/default}"
@@ -14,7 +14,7 @@ CA_CERT="/etc/kubernetes/pki/ca.crt"
 API_CERT="/etc/kubernetes/pki/apiserver.crt"
 WORK_DIR="$HOME/kube-admin"
 KUBECONFIG_DIR="$WORK_DIR/users/kubeconfigs"
-KUBECONFIG_FILE="$KUBECONFIG_DIR/$CLUSTER_NAME-sso.conf"
+KUBECONFIG_FILE="$KUBECONFIG_DIR/$CONTEXT_NAME.conf"
 
 if [[ -z "${API_SERVER:-}" ]]; then
   DNS_ALL="$(openssl x509 -in "$API_CERT" -noout -text | grep "DNS:" | tr ',' '\n' | grep "DNS:" | tr -d 'DNS: ')"
@@ -29,7 +29,7 @@ if [[ -z "${API_SERVER:-}" ]]; then
   fi
   # TODO: Lookup API port
   API_SERVER="https://${API_DNS}:6443"
-  echo "API Server: ${API_SERVER}:"
+  echo "API Server: ${API_SERVER}"
 fi
 
 # Base64 encode the certificates
